@@ -1,6 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Image } from 'react-native';
 import { router } from 'expo-router';
 
 export default function HomeScreen() {
@@ -11,55 +10,35 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={['#2E3192', '#1BFFFF']}
-        style={styles.background}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
-      
       <View style={styles.headerContainer}>
-        <Text style={styles.title}>Mind Pace</Text>
-        <Text style={styles.subtitle}>Stay focused. Stay productive.</Text>
-      </View>
-
-      <View style={styles.imageContainer}>
-        {/* Timer visualization */}
-        <View style={styles.timerVisualization}>
-          <View style={styles.coffeeCircle}>
-            <View style={styles.coffeeFill} />
-          </View>
+        <View style={styles.logoContainer}>
+          <Image 
+            source={require('../assets/mind-pace-logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
       </View>
 
       <View style={styles.descriptionContainer}>
         <Text style={styles.description}>
-          A simple and visually engaging focus timer that helps you stay productive. 
-          Watch as a coffee cup gradually empties to track your work and break sessions.
+          Mindful productivity through focused intervals
         </Text>
       </View>
 
       <TouchableOpacity style={styles.button} onPress={handleStartSession}>
-        <Text style={styles.buttonText}>Begin Focus Session</Text>
+        <Text style={styles.buttonText}>Begin Session</Text>
       </TouchableOpacity>
 
       <View style={styles.featureContainer}>
-        <Text style={styles.featureTitle}>Features:</Text>
         <View style={styles.featureItem}>
-          <Text style={styles.featureDot}>•</Text>
-          <Text style={styles.featureText}>Work & break cycle visualization</Text>
+          <Text style={styles.featureText}>Focused intervals</Text>
         </View>
         <View style={styles.featureItem}>
-          <Text style={styles.featureDot}>•</Text>
-          <Text style={styles.featureText}>Multiple theme options</Text>
+          <Text style={styles.featureText}>Mindful breaks</Text>
         </View>
         <View style={styles.featureItem}>
-          <Text style={styles.featureDot}>•</Text>
-          <Text style={styles.featureText}>Customizable timer settings</Text>
-        </View>
-        <View style={styles.featureItem}>
-          <Text style={styles.featureDot}>•</Text>
-          <Text style={styles.featureText}>Simple, distraction-free interface</Text>
+          <Text style={styles.featureText}>Progress tracking</Text>
         </View>
       </View>
     </SafeAreaView>
@@ -69,113 +48,73 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  background: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
+    backgroundColor: 'rgb(255, 234, 186)',
   },
   headerContainer: {
     alignItems: 'center',
-    marginTop: 60,
+    marginTop: 80,
   },
-  title: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    letterSpacing: 1,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    marginTop: 5,
-    opacity: 0.8,
-  },
-  imageContainer: {
-    alignItems: 'center',
-    marginTop: 40,
-  },
-  timerVisualization: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  logoContainer: {
+    width: 640,
+    height: 340,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  coffeeCircle: {
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    overflow: 'hidden',
-  },
-  coffeeFill: {
-    position: 'absolute',
-    bottom: 0,
+  logo: {
     width: '100%',
-    height: '70%',
-    backgroundColor: '#6A3805',
-    borderBottomLeftRadius: 75,
-    borderBottomRightRadius: 75,
+    height: '100%',
+  },
+  title: {
+    fontSize: 32,
+    fontFamily: 'Quicksand',
+    fontWeight: '400',
+    color: '#1F3B2C',
+    letterSpacing: 8,
+    marginTop: 20,
   },
   descriptionContainer: {
     padding: 20,
-    marginTop: 30,
+    marginTop: 40,
+    alignItems: 'center',
   },
   description: {
     fontSize: 16,
-    color: '#FFFFFF',
+    fontFamily: 'Poppins',
+    color: '#1F3B2C',
     textAlign: 'center',
     lineHeight: 24,
+    opacity: 0.8,
+    maxWidth: 280,
   },
   button: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1F3B2C',
     paddingVertical: 16,
     paddingHorizontal: 40,
     borderRadius: 30,
     alignSelf: 'center',
-    marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    marginTop: 40,
   },
   buttonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2E3192',
+    fontSize: 16,
+    fontFamily: 'Quicksand',
+    fontWeight: '600',
+    color: '#FFF1D6',
+    letterSpacing: 1,
   },
   featureContainer: {
-    marginTop: 40,
+    marginTop: 60,
     paddingHorizontal: 40,
     marginBottom: 40,
   },
-  featureTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 10,
-  },
   featureItem: {
-    flexDirection: 'row',
-    marginVertical: 5,
+    marginVertical: 8,
     alignItems: 'center',
   },
-  featureDot: {
-    fontSize: 20,
-    color: '#FFFFFF',
-    marginRight: 10,
-  },
   featureText: {
-    fontSize: 16,
-    color: '#FFFFFF',
-    opacity: 0.9,
+    fontSize: 14,
+    fontFamily: 'Poppins',
+    color: '#1F3B2C',
+    opacity: 0.7,
+    letterSpacing: 1,
   },
 }); 

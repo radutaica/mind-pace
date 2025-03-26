@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 
 export default function TimerScreen() {
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [time, setTime] = useState(25 * 60); // 25 minutes in seconds
+  const [time, setTime] = useState(25 * 60);
   const [fillPercentage, setFillPercentage] = useState(100);
   
   useEffect(() => {
@@ -16,7 +15,6 @@ export default function TimerScreen() {
       interval = setInterval(() => {
         setTime((time) => {
           if (time > 0) {
-            // Calculate fill percentage based on remaining time
             const newFillPercentage = (time - 1) / (25 * 60) * 100;
             setFillPercentage(newFillPercentage);
             return time - 1;
@@ -60,38 +58,39 @@ export default function TimerScreen() {
     router.back();
   };
   
-  // Format time to display
   const formatTime = () => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
-    
     return `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
   };
   
   return (
-    <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={['#2E3192', '#1BFFFF']}
-        style={styles.background}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      />
-      
+    <SafeAreaView style={styles.container}>      
       <TouchableOpacity style={styles.backButton} onPress={handleBack}>
         <Text style={styles.backButtonText}>← Back</Text>
       </TouchableOpacity>
       
-      <View style={styles.header}>
-        <Text style={styles.title}>Mind Pace</Text>
-      </View>
-      
       <View style={styles.timerContainer}>
         <View style={styles.timerVisualization}>
-          <View style={styles.coffeeCircle}>
+          {/* Egg outline */}
+          <View style={styles.eggOutline}>
+            {/* Timer marks */}
+            <View style={styles.timerMarks}>
+              {Array.from({ length: 9 }).map((_, index) => (
+                <View 
+                  key={index} 
+                  style={[
+                    styles.timerMark,
+                    { opacity: (fillPercentage / 100) > (index / 8) ? 1 : 0.3 }
+                  ]} 
+                />
+              ))}
+            </View>
+            {/* Timer indicator */}
             <View 
               style={[
-                styles.coffeeFill, 
-                { height: `${fillPercentage}%` }
+                styles.timerIndicator,
+                { transform: [{ translateY: (100 - fillPercentage) }] }
               ]} 
             />
           </View>
@@ -102,7 +101,7 @@ export default function TimerScreen() {
         <View style={styles.controlsContainer}>
           {!isActive ? (
             <TouchableOpacity style={styles.button} onPress={handleStart}>
-              <Text style={styles.buttonText}>Start</Text>
+              <Text style={styles.buttonText}>Begin Focus</Text>
             </TouchableOpacity>
           ) : (
             <>
@@ -130,13 +129,7 @@ export default function TimerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  background: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
+    backgroundColor: 'rgb(255, 234, 182)',
   },
   backButton: {
     position: 'absolute',
@@ -145,83 +138,94 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   backButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-  },
-  header: {
-    alignItems: 'center',
-    marginTop: 60,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginTop: 30,
+    color: '#1F3B2C',
+    fontSize: 16,
+    fontFamily: 'Quicksand',
+    opacity: 0.8,
   },
   timerContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingBottom: 80,
   },
   timerVisualization: {
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    width: 280,
+    height: 280,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 40,
   },
-  coffeeCircle: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    overflow: 'hidden',
-    transform: [{ rotateX: '180deg' }], // Flip to make the fill start from top
-  },
-  coffeeFill: {
-    position: 'absolute',
-    bottom: 0,
+  eggOutline: {
     width: '100%',
-    backgroundColor: '#6A3805',
-    borderTopLeftRadius: 100,
-    borderTopRightRadius: 100,
+    height: '100%',
+    borderWidth: 3,
+    borderColor: '#1F3B2C',
+    borderRadius: 140,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  timerMarks: {
+    width: '50%',
+    height: 30,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  timerMark: {
+    width: 3,
+    height: 20,
+    backgroundColor: '#1F3B2C',
+  },
+  timerIndicator: {
+    position: 'absolute',
+    width: 0,
+    height: 0,
+    backgroundColor: 'transparent',
+    borderStyle: 'solid',
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderBottomWidth: 15,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: '#1F3B2C',
   },
   timerText: {
     fontSize: 48,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontFamily: 'Quicksand',
+    fontWeight: '300',
+    color: '#1F3B2C',
     marginBottom: 40,
+    letterSpacing: 2,
   },
   controlsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     width: '100%',
+    gap: 20,
   },
   button: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1F3B2C',
     paddingVertical: 16,
-    paddingHorizontal: 40,
+    paddingHorizontal: 32,
     borderRadius: 30,
-    marginHorizontal: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
+    minWidth: 140,
+    alignItems: 'center',
   },
   buttonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2E3192',
+    fontSize: 16,
+    fontFamily: 'Quicksand',
+    fontWeight: '600',
+    color: 'rgb(255, 234, 182)',
+    letterSpacing: 1,
   },
   resetButton: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: '#1F3B2C',
   },
   resetButtonText: {
-    color: '#FFFFFF',
+    color: '#1F3B2C',
   },
 }); 
