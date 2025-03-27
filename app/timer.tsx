@@ -1,21 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
 
 export default function TimerScreen() {
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [time, setTime] = useState(25 * 60);
+  const [time, setTime] = useState(1 * 60);
   const [fillPercentage, setFillPercentage] = useState(100);
+  const initialTimeRef = useRef(time);
   
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined = undefined;
     
     if (isActive && !isPaused) {
+      // Store initial time when timer starts
+      if (initialTimeRef.current !== time && fillPercentage === 100) {
+        initialTimeRef.current = time;
+      }
+      
       interval = setInterval(() => {
         setTime((time) => {
           if (time > 0) {
-            const newFillPercentage = (time - 1) / (25 * 60) * 100;
+            // Calculate percentage based on current time relative to initial time
+            const newFillPercentage = (time - 1) / initialTimeRef.current * 100;
             setFillPercentage(newFillPercentage);
             return time - 1;
           } else {
@@ -35,6 +42,9 @@ export default function TimerScreen() {
   }, [isActive, isPaused]);
   
   const handleStart = () => {
+    // Update initialTimeRef when starting
+    initialTimeRef.current = time;
+    setFillPercentage(100);
     setIsActive(true);
     setIsPaused(false);
   };
@@ -72,27 +82,35 @@ export default function TimerScreen() {
       
       <View style={styles.timerContainer}>
         <View style={styles.timerVisualization}>
-          {/* Egg outline */}
-          <View style={styles.eggOutline}>
-            {/* Timer marks */}
-            <View style={styles.timerMarks}>
-              {Array.from({ length: 9 }).map((_, index) => (
-                <View 
-                  key={index} 
-                  style={[
-                    styles.timerMark,
-                    { opacity: (fillPercentage / 100) > (index / 8) ? 1 : 0.3 }
-                  ]} 
-                />
-              ))}
+          {/* Coffee Cup */}
+          <View style={styles.cupContainer}>
+            {/* Cup handle */}
+            <View style={styles.cupHandle} />
+            
+            {/* Cup body */}
+            <View style={styles.cupBody}>
+              {/* Coffee liquid */}
+              <View 
+                style={[
+                  styles.coffee, 
+                  { height: `${fillPercentage}%` }
+                ]}
+              >
+                {/* Coffee surface with steam */}
+                <View style={styles.coffeeSurface}>
+                  {isActive && !isPaused && (
+                    <>
+                      <View style={[styles.steam, styles.steam1]} />
+                      <View style={[styles.steam, styles.steam2]} />
+                      <View style={[styles.steam, styles.steam3]} />
+                    </>
+                  )}
+                </View>
+              </View>
             </View>
-            {/* Timer indicator */}
-            <View 
-              style={[
-                styles.timerIndicator,
-                { transform: [{ translateY: (100 - fillPercentage) }] }
-              ]} 
-            />
+            
+            {/* Cup saucer */}
+            <View style={styles.cupSaucer} />
           </View>
         </View>
         
@@ -156,40 +174,85 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 40,
   },
-  eggOutline: {
+  cupContainer: {
     width: '100%',
     height: '100%',
-    borderWidth: 3,
-    borderColor: '#1F3B2C',
-    borderRadius: 140,
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
   },
-  timerMarks: {
-    width: '50%',
-    height: 30,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  cupBody: {
+    width: 120,
+    height: 150,
+    borderWidth: 5,
+    borderColor: '#1F3B2C',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: 'white',
+    position: 'relative',
   },
-  timerMark: {
-    width: 3,
-    height: 20,
-    backgroundColor: '#1F3B2C',
-  },
-  timerIndicator: {
+  cupHandle: {
     position: 'absolute',
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderLeftWidth: 10,
-    borderRightWidth: 10,
-    borderBottomWidth: 15,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: '#1F3B2C',
+    width: 40,
+    height: 60,
+    borderWidth: 5,
+    borderColor: '#1F3B2C',
+    borderLeftWidth: 0,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+    right: 65,
+    top: 100,
+  },
+  cupSaucer: {
+    width: 160,
+    height: 20,
+    borderRadius: 80,
+    backgroundColor: '#1F3B2C',
+    marginTop: 5,
+  },
+  coffee: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    backgroundColor: '#6F4E37',
+  },
+  coffeeSurface: {
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    height: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingTop: 2,
+  },
+  steam: {
+    position: 'absolute',
+    width: 8,
+    height: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderRadius: 10,
+  },
+  steam1: {
+    left: '30%',
+    transform: [{ rotate: '-15deg' }],
+    opacity: 0.7,
+    top: -20,
+  },
+  steam2: {
+    left: '50%',
+    transform: [{ rotate: '0deg' }],
+    opacity: 0.9,
+    height: 25,
+    top: -25,
+  },
+  steam3: {
+    left: '70%',
+    transform: [{ rotate: '15deg' }],
+    opacity: 0.7,
+    top: -20,
   },
   timerText: {
     fontSize: 48,
