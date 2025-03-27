@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 export default function TimerScreen() {
+  const params = useLocalSearchParams<{ focusTime?: string, relaxTime?: string }>();
+  
+  // Convert params to numbers with fallback values
+  const initialFocusTime = params.focusTime ? parseInt(params.focusTime, 10) : 25;
+  const initialRelaxTime = params.relaxTime ? parseInt(params.relaxTime, 10) : 5;
+  
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [time, setTime] = useState(1 * 60);
+  const [isFocusMode, setIsFocusMode] = useState(true); // True for focus, false for relax
+  const [time, setTime] = useState(initialFocusTime * 60); // Convert minutes to seconds
   const [fillPercentage, setFillPercentage] = useState(100);
   const initialTimeRef = useRef(time);
   
@@ -27,7 +34,19 @@ export default function TimerScreen() {
             return time - 1;
           } else {
             if (interval) clearInterval(interval);
-            setIsActive(false);
+            // If focus mode ended, switch to relax mode and vice versa
+            if (isFocusMode) {
+              setIsFocusMode(false);
+              setTime(initialRelaxTime * 60);
+              setFillPercentage(100);
+              initialTimeRef.current = initialRelaxTime * 60;
+              setIsActive(true); // Auto-start relax timer
+            } else {
+              setIsFocusMode(true);
+              setTime(initialFocusTime * 60);
+              setFillPercentage(100);
+              setIsActive(false); // Don't auto-start focus timer
+            }
             return 0;
           }
         });
@@ -39,7 +58,7 @@ export default function TimerScreen() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isActive, isPaused]);
+  }, [isActive, isPaused, isFocusMode, initialFocusTime, initialRelaxTime]);
   
   const handleStart = () => {
     // Update initialTimeRef when starting
@@ -60,7 +79,7 @@ export default function TimerScreen() {
   const handleReset = () => {
     setIsActive(false);
     setIsPaused(false);
-    setTime(25 * 60);
+    setTime(isFocusMode ? initialFocusTime * 60 : initialRelaxTime * 60);
     setFillPercentage(100);
   };
 
@@ -81,6 +100,10 @@ export default function TimerScreen() {
       </TouchableOpacity>
       
       <View style={styles.timerContainer}>
+        <Text style={styles.modeText}>
+          {isFocusMode ? 'Focus Time' : 'Relax Time'}
+        </Text>
+        
         <View style={styles.timerVisualization}>
           {/* Coffee Cup */}
           <View style={styles.cupContainer}>
@@ -93,7 +116,10 @@ export default function TimerScreen() {
               <View 
                 style={[
                   styles.coffee, 
-                  { height: `${fillPercentage}%` }
+                  { 
+                    height: `${fillPercentage}%`,
+                    backgroundColor: isFocusMode ? '#6F4E37' : '#8BC34A'
+                  }
                 ]}
               >
                 {/* Coffee surface with steam */}
@@ -119,7 +145,9 @@ export default function TimerScreen() {
         <View style={styles.controlsContainer}>
           {!isActive ? (
             <TouchableOpacity style={styles.button} onPress={handleStart}>
-              <Text style={styles.buttonText}>Begin Focus</Text>
+              <Text style={styles.buttonText}>
+                {isFocusMode ? 'Begin Focus' : 'Begin Relax'}
+              </Text>
             </TouchableOpacity>
           ) : (
             <>
@@ -166,6 +194,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingBottom: 80,
+  },
+  modeText: {
+    fontSize: 24,
+    fontFamily: 'Quicksand',
+    fontWeight: '600',
+    color: '#1F3B2C',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   timerVisualization: {
     width: 280,

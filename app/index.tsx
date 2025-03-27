@@ -1,11 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, Image } from 'react-native';
 import { router } from 'expo-router';
+import TimeSelectionModal from './components/TimeSelectionModal';
 
 export default function HomeScreen() {
+  const [modalVisible, setModalVisible] = useState(false);
+
   const handleStartSession = () => {
-    // Navigate to the timer screen
-    router.push('/timer');
+    // Show the time selection modal
+    setModalVisible(true);
+  };
+
+  const handleSelectTime = (focusTime: number, relaxTime: number) => {
+    // Navigate to the timer screen with the selected times
+    router.push({
+      pathname: '/timer',
+      params: { focusTime, relaxTime }
+    });
   };
 
   return (
@@ -41,6 +52,13 @@ export default function HomeScreen() {
           <Text style={styles.featureText}>Progress tracking</Text>
         </View>
       </View>
+
+      {/* Time Selection Modal */}
+      <TimeSelectionModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSelectTime={handleSelectTime}
+      />
     </SafeAreaView>
   );
 }
