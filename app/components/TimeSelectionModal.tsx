@@ -9,8 +9,8 @@ interface TimeSelectionModalProps {
 }
 
 export default function TimeSelectionModal({ visible, onClose, onSelectTime }: TimeSelectionModalProps) {
-  const [focusTime, setFocusTime] = useState(25); // Default 25 minutes
-  const relaxTime = 60 - focusTime; // Automatically calculate relax time
+  const [focusTime, setFocusTime] = useState(0.5); // Default 0.5 minutes
+  const relaxTime = 1 - focusTime; // Automatically calculate relax time based on 1 minute total
   
   const handleConfirm = () => {
     onSelectTime(focusTime, relaxTime);
@@ -22,7 +22,8 @@ export default function TimeSelectionModal({ visible, onClose, onSelectTime }: T
   };
   
   const formatTime = (minutes: number) => {
-    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+    const seconds = Math.round(minutes * 60);
+    return `${seconds} ${seconds === 1 ? 'second' : 'seconds'}`;
   };
   
   return (
@@ -52,9 +53,9 @@ export default function TimeSelectionModal({ visible, onClose, onSelectTime }: T
               <View style={styles.sliderContainer}>
                 <Slider
                   style={styles.slider}
-                  minimumValue={1}
-                  maximumValue={59}
-                  step={1}
+                  minimumValue={0.1}
+                  maximumValue={0.9}
+                  step={0.1}
                   value={focusTime}
                   onValueChange={(value: number) => setFocusTime(value)}
                   minimumTrackTintColor="#1F3B2C"
@@ -62,14 +63,14 @@ export default function TimeSelectionModal({ visible, onClose, onSelectTime }: T
                   thumbTintColor="#1F3B2C"
                 />
                 <View style={styles.sliderLabels}>
-                  <Text style={styles.sliderLabel}>1m</Text>
-                  <Text style={styles.sliderLabel}>30m</Text>
-                  <Text style={styles.sliderLabel}>59m</Text>
+                  <Text style={styles.sliderLabel}>6s</Text>
+                  <Text style={styles.sliderLabel}>30s</Text>
+                  <Text style={styles.sliderLabel}>54s</Text>
                 </View>
               </View>
               
               <Text style={styles.hintText}>
-                Total session time: 60 minutes
+                Total session time: 1 minute
               </Text>
               
               <View style={styles.buttonsContainer}>

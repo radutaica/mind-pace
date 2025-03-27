@@ -5,54 +5,82 @@ import { router, useLocalSearchParams } from 'expo-router';
 export default function TimerScreen() {
   const params = useLocalSearchParams<{ focusTime?: string, relaxTime?: string }>();
   
-  // Convert params to numbers with fallback values
-  const initialFocusTime = params.focusTime ? parseInt(params.focusTime, 10) : 25;
-  const initialRelaxTime = params.relaxTime ? parseInt(params.relaxTime, 10) : 5;
+  // Convert params to numbers with fallback values - now accepting decimal values
+  const initialFocusTime = params.focusTime ? parseFloat(params.focusTime) : 0.5;
+  const initialRelaxTime = params.relaxTime ? parseFloat(params.relaxTime) : 0.5;
   
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isFocusMode, setIsFocusMode] = useState(true); // True for focus, false for relax
-  const [time, setTime] = useState(initialFocusTime * 60); // Convert minutes to seconds
+  const [timeLeft, setTimeLeft] = useState(Math.round(initialFocusTime * 60)); // in seconds
   const [fillPercentage, setFillPercentage] = useState(100);
-  const initialTimeRef = useRef(time);
+  
+  // References for tracking time
+  const startTimeRef = useRef<number | null>(null); // timestamp when timer started
+  const pausedTimeRef = useRef<number>(0); // accumulated paused time
+  const pauseStartRef = useRef<number | null>(null); // timestamp when pause started
+  const totalDurationRef = useRef(Math.round(initialFocusTime * 60)); // total duration in seconds
   
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined = undefined;
     
     if (isActive && !isPaused) {
-      // Store initial time when timer starts
-      if (initialTimeRef.current !== time && fillPercentage === 100) {
-        initialTimeRef.current = time;
+      // If we're unpausing, track the paused time
+      if (pauseStartRef.current !== null) {
+        pausedTimeRef.current += Date.now() - pauseStartRef.current;
+        pauseStartRef.current = null;
+      }
+      
+      // If we're just starting, set the start time
+      if (startTimeRef.current === null) {
+        startTimeRef.current = Date.now();
+        totalDurationRef.current = Math.round(isFocusMode ? initialFocusTime * 60 : initialRelaxTime * 60);
       }
       
       interval = setInterval(() => {
-        setTime((time) => {
-          if (time > 0) {
-            // Calculate percentage based on current time relative to initial time
-            const newFillPercentage = (time - 1) / initialTimeRef.current * 100;
-            setFillPercentage(newFillPercentage);
-            return time - 1;
+        const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current! - pausedTimeRef.current) / 1000);
+        const newTimeLeft = Math.max(0, totalDurationRef.current - elapsedSeconds);
+        
+        setTimeLeft(newTimeLeft);
+        
+        if (isFocusMode) {
+          // For focus mode, percentage decreases as time decreases
+          const newFillPercentage = (newTimeLeft / totalDurationRef.current) * 100;
+          setFillPercentage(newFillPercentage);
+        } else {
+          // For relax mode, percentage increases as time decreases
+          const newFillPercentage = 100 - ((newTimeLeft / totalDurationRef.current) * 100);
+          setFillPercentage(newFillPercentage);
+        }
+        
+        // Check if timer completed
+        if (newTimeLeft === 0) {
+          if (interval) clearInterval(interval);
+          
+          // If focus mode ended, switch to relax mode and vice versa
+          if (isFocusMode) {
+            setIsFocusMode(false);
+            setTimeLeft(Math.round(initialRelaxTime * 60));
+            setFillPercentage(0); // Start at 0% for relax mode
+            totalDurationRef.current = Math.round(initialRelaxTime * 60);
+            startTimeRef.current = Date.now();
+            pausedTimeRef.current = 0;
+            setIsActive(true); // Auto-start relax timer
           } else {
-            if (interval) clearInterval(interval);
-            // If focus mode ended, switch to relax mode and vice versa
-            if (isFocusMode) {
-              setIsFocusMode(false);
-              setTime(initialRelaxTime * 60);
-              setFillPercentage(100);
-              initialTimeRef.current = initialRelaxTime * 60;
-              setIsActive(true); // Auto-start relax timer
-            } else {
-              setIsFocusMode(true);
-              setTime(initialFocusTime * 60);
-              setFillPercentage(100);
-              setIsActive(false); // Don't auto-start focus timer
-            }
-            return 0;
+            setIsFocusMode(true);
+            setTimeLeft(Math.round(initialFocusTime * 60));
+            setFillPercentage(100); // Start at 100% for focus mode
+            totalDurationRef.current = Math.round(initialFocusTime * 60);
+            startTimeRef.current = null;
+            pausedTimeRef.current = 0;
+            setIsActive(false); // Don't auto-start focus timer
           }
-        });
-      }, 1000);
-    } else if (interval) {
-      clearInterval(interval);
+        }
+      }, 100); // Update more frequently for smoother UI
+    } else if (isPaused && pauseStartRef.current === null) {
+      // Store the time when we paused
+      pauseStartRef.current = Date.now();
+      if (interval) clearInterval(interval);
     }
     
     return () => {
@@ -61,9 +89,12 @@ export default function TimerScreen() {
   }, [isActive, isPaused, isFocusMode, initialFocusTime, initialRelaxTime]);
   
   const handleStart = () => {
-    // Update initialTimeRef when starting
-    initialTimeRef.current = time;
-    setFillPercentage(100);
+    startTimeRef.current = Date.now();
+    pausedTimeRef.current = 0;
+    pauseStartRef.current = null;
+    totalDurationRef.current = Math.round(isFocusMode ? initialFocusTime * 60 : initialRelaxTime * 60);
+    setFillPercentage(isFocusMode ? 100 : 0); // 100% for focus, 0% for relax
+    setTimeLeft(totalDurationRef.current);
     setIsActive(true);
     setIsPaused(false);
   };
@@ -79,8 +110,12 @@ export default function TimerScreen() {
   const handleReset = () => {
     setIsActive(false);
     setIsPaused(false);
-    setTime(isFocusMode ? initialFocusTime * 60 : initialRelaxTime * 60);
-    setFillPercentage(100);
+    startTimeRef.current = null;
+    pausedTimeRef.current = 0;
+    pauseStartRef.current = null;
+    totalDurationRef.current = Math.round(isFocusMode ? initialFocusTime * 60 : initialRelaxTime * 60);
+    setTimeLeft(totalDurationRef.current);
+    setFillPercentage(isFocusMode ? 100 : 0); // 100% for focus, 0% for relax
   };
 
   const handleBack = () => {
@@ -88,8 +123,8 @@ export default function TimerScreen() {
   };
   
   const formatTime = () => {
-    const minutes = Math.floor(time / 60);
-    const seconds = time % 60;
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
     return `${minutes < 10 ? '0' + minutes : minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
   };
   
@@ -118,7 +153,7 @@ export default function TimerScreen() {
                   styles.coffee, 
                   { 
                     height: `${fillPercentage}%`,
-                    backgroundColor: isFocusMode ? '#6F4E37' : '#8BC34A'
+                    backgroundColor: '#6F4E37'
                   }
                 ]}
               >
