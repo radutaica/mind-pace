@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
+import CoffeeAnimation from './components/CoffeeAnimation';
 
 export default function TimerScreen() {
   const params = useLocalSearchParams<{ focusTime?: string, relaxTime?: string }>();
@@ -22,7 +23,7 @@ export default function TimerScreen() {
   const totalDurationRef = useRef(Math.round(initialFocusTime * 60)); // total duration in seconds
   
   useEffect(() => {
-    let interval: NodeJS.Timeout | undefined = undefined;
+    let interval: ReturnType<typeof setInterval> | undefined = undefined;
     
     if (isActive && !isPaused) {
       // If we're unpausing, track the paused time
@@ -140,39 +141,10 @@ export default function TimerScreen() {
         </Text>
         
         <View style={styles.timerVisualization}>
-          {/* Coffee Cup */}
-          <View style={styles.cupContainer}>
-            {/* Cup handle */}
-            <View style={styles.cupHandle} />
-            
-            {/* Cup body */}
-            <View style={styles.cupBody}>
-              {/* Coffee liquid */}
-              <View 
-                style={[
-                  styles.coffee, 
-                  { 
-                    height: `${fillPercentage}%`,
-                    backgroundColor: '#6F4E37'
-                  }
-                ]}
-              >
-                {/* Coffee surface with steam */}
-                <View style={styles.coffeeSurface}>
-                  {isActive && !isPaused && (
-                    <>
-                      <View style={[styles.steam, styles.steam1]} />
-                      <View style={[styles.steam, styles.steam2]} />
-                      <View style={[styles.steam, styles.steam3]} />
-                    </>
-                  )}
-                </View>
-              </View>
-            </View>
-            
-            {/* Cup saucer */}
-            <View style={styles.cupSaucer} />
-          </View>
+          <CoffeeAnimation 
+            fillPercentage={fillPercentage}
+            isFocusMode={isFocusMode}
+          />
         </View>
         
         <Text style={styles.timerText}>{formatTime()}</Text>
@@ -244,86 +216,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 40,
-  },
-  cupContainer: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  cupBody: {
-    width: 120,
-    height: 150,
-    borderWidth: 5,
-    borderColor: '#1F3B2C',
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: 'white',
-    position: 'relative',
-  },
-  cupHandle: {
-    position: 'absolute',
-    width: 40,
-    height: 60,
-    borderWidth: 5,
-    borderColor: '#1F3B2C',
-    borderLeftWidth: 0,
-    borderTopRightRadius: 20,
-    borderBottomRightRadius: 20,
-    right: 65,
-    top: 100,
-  },
-  cupSaucer: {
-    width: 160,
-    height: 20,
-    borderRadius: 80,
-    backgroundColor: '#1F3B2C',
-    marginTop: 5,
-  },
-  coffee: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    backgroundColor: '#6F4E37',
-  },
-  coffeeSurface: {
-    position: 'absolute',
-    top: 0,
-    width: '100%',
-    height: 10,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    paddingTop: 2,
-  },
-  steam: {
-    position: 'absolute',
-    width: 8,
-    height: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    borderRadius: 10,
-  },
-  steam1: {
-    left: '30%',
-    transform: [{ rotate: '-15deg' }],
-    opacity: 0.7,
-    top: -20,
-  },
-  steam2: {
-    left: '50%',
-    transform: [{ rotate: '0deg' }],
-    opacity: 0.9,
-    height: 25,
-    top: -25,
-  },
-  steam3: {
-    left: '70%',
-    transform: [{ rotate: '15deg' }],
-    opacity: 0.7,
-    top: -20,
   },
   timerText: {
     fontSize: 48,

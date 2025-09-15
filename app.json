@@ -13,7 +13,9 @@
       "backgroundColor": "#ffffff"
     },
     "scheme": "mind-pace",
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true
     },
